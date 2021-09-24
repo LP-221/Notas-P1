@@ -1,0 +1,198 @@
+* Lenguajes de Programación Grupo 7084
+Correos:
++ Profesor: L. en C.C. Fernando Abigail Galicia Mendoza | fernandogamen@ciencias.unam.mx
++ Ayudante: Alexis Rivas León | alex-rivasl@ciencias.unam.mx
++ Laboratorio: Emiliano Galeana Araujo | galeanaara@ciencias.unam.mx
+
+Curso:
++ Classroom
++ [[][telegram]]
++ [[https://drive.google.com/drive/u/0/folders/136bZP00WtqWWFJAkZDo7mS-OsAx_B_7zWCc1iZVEvYp3vDKIpuMTPoECgpc_w9RvkkSYJrc8][drive]]
++ [[https://meet.google.com/vhh-hvip-aci?authuser=0&hs=179][Clases]]
++ LP20221-ASUNTO
+
+* Primera clase
+
++ [X] Anuncios
+  + [X] Telegram
+  + [X] ghc
+  + [X] ejercicios extras
+  + [X] evaluación
+    + [X] Compilacion
+    + [X] código legible
+    + [X] referencias (si aplica)
+
+** Práctica1
+
+[[https://drive.google.com/file/d/1tdOD6UreDL0vMUKfEUAjXVuIkRrYIZSW/view][Caso de uso: 6.1]]
+
+Header:
+#+BEGIN_SRC haskell
+module Parens where
+
+import Test.HUnit
+#+END_SRC
+
+Necesitamos definir el lenguaje de parétesis:
+
+:Resultado:
+
+#+BEGIN_SRC haskell
+-- Nuestro tipo de datos principal, el lenguaje de los paréntesis.
+data Lexer = Epsilon | M2 (Tokens) Lexer (Tokens) | M3 Lexer Lexer
+
+-- Representamos los tokens que son '(' y ')' 
+data Tokens = LP | RP deriving (Eq)
+
+-- Representamos un stack de tokens
+type Stack = [Tokens]
+#+END_SRC
+
+:end:
+
+Además, como creamos un =Stack=, hay que hacer operaciones sobre él.
+
+:Resultado:
+
+#+BEGIN_SRC haskell
+-- Función que elimina el primer elemento del stack.
+pop :: Stack -> Stack
+pop []     = error "Operation not supported"
+pop (x:xs) = xs
+#+END_SRC
+
+:end:
+
+Ahora, un /toString/.
+
+:Resultado:
+
+#+BEGIN_SRC haskell
+
+-- Instancia de Show para los tokens (paréntesis)
+instance Show Tokens where
+  show LP = "("
+  show RP = ")"
+
+-- Instancia de Show para las cadenas que podemos crear.
+instance Show Lexer where
+  show Epsilon   = ""
+  show (M2 a b c) = show a ++ show b ++ show c
+  show (M3 a b)   = show a ++ show b
+#+END_SRC
+
+:end:
+
+Para probarlo, implementemos la función =nLP=.
+
+#+BEGIN_SRC haskell
+-- Función que calcula el número de paréntesis izquierdos "a propósito".
+nLP :: Lexer -> Int
+nLP Epsilon = 0
+nLP         = error "D:"
+#+END_SRC
+
+¿Cómo implementarían lo demás?
+
+:ideas:
++ tomar los tokens
++ pasar a cadena
++ ...
+:end:
+
+Lo que queremos es, según las pruebas: /"accept1"~: True ~=? (accept
+string1a)/ Que en otras palabras =accept string1a= regresa =True=.
+
+#+BEGIN_SRC haskell
+accept :: Lexer -> Bool
+accept word = error "D:"
+#+END_SRC
+
+La idea es que en la pila guardemos paréntesis izquierdos. Cada que
+veamos uno derecho, hacemos =pop= y si al final (de leer la cadena) la
+pila está vacía, entonces esa cadena se acepta, si no está vacía, no.
+
+En las notas tenemos tres reglas:
+
+1. Se acepta ε si hay 0 paréntesis en la pila. De haber paréntesis en
+   la pila, ya no habría forma de aparearlos con el resto de la cadena
+   a saber ε y por tanto la cadena no puede aceptarse.
+2. Se acepta la cadena =(s= con k paréntesis en la pila si se acepta
+   la cadena =s= con /k + 1/ paréntesis en la pila. El símbolo a leer
+   es =(= el cual se guardará en la pila, quedarán /k + 1/ paréntesis
+   en la pila y se debe procesar =s=.
+3. Se acepta la cadena =)s= con /k/ paréntesis en la pila si /k > 0/ y
+   se acepta =s= con /k − 1/ paréntesis en la pila. Puesto que el
+   símbolo a leer es =)= observemos que si /k = 0/ el paréntesis
+   derecho no se podría aparear. Al leer =)=, este paréntesis se
+   apareó con un paréntesis izquierdo de la pila por lo que quedan /k
+   − 1/ y se debe procesar =s=.
+
+:mi_solucion:
+#+BEGIN_SRC haskell
+-- Función que analiza la cadena.
+analyzer :: Stack -> String -> Bool
+analyzer [] "" = True
+analyzer stack ('(':xs) = analyzer ([LP] ++ stack) xs
+analyzer stack (')':xs) = if length stack > 0
+                          then analyzer (pop stack) xs
+                          else False
+analyzer _ "" = False
+#+END_SRC
+:end:
+
+Necesitamos una función auxiliar, porque queremos una lista de Tokens.
+
+:resultado:
+#+BEGIN_SRC haskell
+-- Función que dado una cadena de nuestro lenguaje extrae los tokens
+-- importantes (No los constructores del data)
+getTokens :: Lexer -> [Tokens]
+getTokens = error "D:"
+#+END_SRC
+:end:
+
+*** Pruebas
+
+Instalar (Stack o Cabal) =install HUnit QuickCheck=
+
++ [[https://docs.haskellstack.org/en/stable/README/][stack]]
++ [[https://www.haskell.org/cabal/][cabal]]
+
+Cadenas de ayuda
+
+#+BEGIN_SRC haskell
+string1a :: Lexer
+string1a = M2 LP (M2 LP (M2 LP (Epsilon) RP) RP) RP
+-- ((()))
+
+string1u :: Lexer
+string1u = M2 LP (M2 LP (M2 RP (Epsilon) RP) RP) RP
+-- (())))
+
+string2a :: Lexer
+string2a = M3 (M2 LP Epsilon RP) (M2 LP Epsilon RP)
+-- ()()
+#+END_SRC
+
+#+BEGIN_SRC haskell
+-- Correr con: runTestTT myTests, en caso de que estén bien
+-- implementadas, deberá mostrar 0 errores. En caso de que no mostrará
+-- el nombre de la prueba y el valor que se esperaba/regresa.
+myTests = TestList [ "showLexer1"    ~: "((()))" ~=? (show string1a),
+                     "showLexer2"    ~: "()()"   ~=? (show string2a),
+                     "showLexer3"    ~: "(())))" ~=? (show string1u),
+                     "nLP1"          ~: 3 ~=? (nLP string1a),
+                     "nLP2"          ~: 2 ~=? (nLP string2a),
+                     "nLP3"          ~: 2 ~=? (nLP string1u),
+                     "accept1"            ~: True  ~=? (accept string1a),
+                     "accept2"            ~: True  ~=? (accept string2a),
+                     "accept3"            ~: False ~=? (accept string1u),
+                     "analyzerWithLists1" ~: True  ~=? (analyzerWithLists [] []),
+                     "analyzerWithLists2" ~: True  ~=? (analyzerWithLists [LP] [RP]),
+                     "analyzerWithLists3" ~: False ~=? (analyzerWithLists [] [RP]),
+                     "test getTokens1"    ~: [LP, LP, LP, RP, RP, RP] ~=? (getTokens string1a),
+                     "test getTokens2"    ~: [LP, RP, LP, RP]         ~=? (getTokens string2a),
+                     "test getTokens3"    ~: [LP, LP, RP, RP, RP, RP] ~=? (getTokens string1u)
+                 ]
+#+END_SRC
