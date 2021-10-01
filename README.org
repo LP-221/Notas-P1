@@ -201,6 +201,17 @@ myTests = TestList [ "showLexer1"    ~: "((()))" ~=? (show string1a),
 
 Queda pendiente la función =nLP=.
 
+Solo puedes construir cosas como =Token s Token=. Un =Token= solo
+puede ser =LP= o =RP=. Podemos construir =(s), )s(, )s), (s(=.
+
+:algoritmo:
+Recibo =M2 a b c= verifico que =a= sea un paréntesis izquierdo, si lo
+es, sumo 1 a lo que sea que tenga, y si no es, sumo cero. Además
+verifico que =c= sea un paréntesis izquierdo, si lo es sumo 1 a lo que
+sea que tenga, y si no es, sumo cero. Al final cuento el número de
+paréntesis izquierdos de =b=.
+:end:
+
 #+BEGIN_SRC haskell
 -- Función que calcula el número de paréntesis izquierdos "a propósito".
 nLP :: Lexer -> Int
@@ -214,7 +225,7 @@ hicimos para cadenas, falta con =[Token]=.
 
 #+BEGIN_SRC haskell
 accept :: Lexer -> Bool
-accept = error "D:"
+accept word = analyze [] (show word) -- con cadenas "()()()()"
 #+END_SRC
 
 Para lo anterior necesitamos una lista de =Token=.
@@ -226,6 +237,15 @@ getTokens :: Lexer -> [Tokens]
 getTokens Epsilon = []
 getTokens _       = error "D:"
 #+END_SRC
+
+Entonces, ¿Para =[Token]=?
+
+:accept-token:
+#+BEGIN_SRC haskell
+accept :: Lexer -> Bool
+accept word = analyzerWithLists [] (getTokens word) -- con lista de tokens [LP, RP, LP, etc]
+#+END_SRC
+:end:
 
 *** ¿Dudas?
 
