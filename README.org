@@ -196,3 +196,37 @@ myTests = TestList [ "showLexer1"    ~: "((()))" ~=? (show string1a),
                      "test getTokens3"    ~: [LP, LP, RP, RP, RP, RP] ~=? (getTokens string1u)
                  ]
 #+END_SRC
+
+** Terminar la práctica
+
+Queda pendiente la función =nLP=.
+
+#+BEGIN_SRC haskell
+-- Función que calcula el número de paréntesis izquierdos "a propósito".
+nLP :: Lexer -> Int
+nLP Epsilon      = 0
+nLP (N2 t1 l t2) = error "D:"
+nLP (M3 l1 l2)   = nLP l1 + nLP l2
+#+END_SRC
+
+Además ver si una cadena de parétesis pertenecen o no al lenguaje. Lo
+hicimos para cadenas, falta con =[Token]=.
+
+#+BEGIN_SRC haskell
+accept :: Lexer -> Bool
+accept = error "D:"
+#+END_SRC
+
+Para lo anterior necesitamos una lista de =Token=.
+
+#+BEGIN_SRC haskell
+-- Función que dado una cadena de nuestro lenguaje extrae los tokens
+-- importantes (No los constructores del data)
+getTokens :: Lexer -> [Tokens]
+getTokens Epsilon = []
+getTokens _       = error "D:"
+#+END_SRC
+
+*** ¿Dudas?
+
+
